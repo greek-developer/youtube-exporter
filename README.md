@@ -1,4 +1,4 @@
-# YoutubeExporter
+# YouTubeExporter
 
 This application exposes YouTube channel and video statistics as Prometheus metrics on port 5051, at /metrics.
 
