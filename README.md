@@ -45,3 +45,15 @@ Optionally edit the `urls` field to change the port
 ## Notes
 - "format" label is "short" if video duration < 60s, else "long".
 - Metrics are updated periodically (default: every 5 minutes).
+
+## Versioning
+
+The package version lives in [`Directory.Build.props`](Directory.Build.props) at the repo root, not in any `.csproj`. Bump it with:
+
+```powershell
+./scripts/bump-version.ps1          # bump the minor version (x.Y.0)
+./scripts/bump-version.ps1 --major  # bump the major version (X.0.0)
+./scripts/bump-version.ps1 --push   # also push the bump commit
+```
+
+The script refuses to run with uncommitted changes, and commits the bump as `bump version to x.x.x`.
