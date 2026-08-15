@@ -1,0 +1,5 @@
+# grdev standard: normalize text to CRLF in the working tree.
+* text=auto eol=crlf
+
+# The one exception: scripts sh executes must stay LF, or a CRLF shebang breaks them.
+scripts/.githooks/** text eol=lf

@@ -485,3 +485,7 @@ $RECYCLE.BIN/
 
 # User secrets and overrides
 src/YouTubeExporter/appsettings.User.json
+
+# grdev: build output is never committed
+release/
+ProductionVersion.json

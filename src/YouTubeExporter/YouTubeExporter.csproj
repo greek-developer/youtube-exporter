@@ -2,12 +2,51 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.70.0.3847" />    
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.70.0.3847" />
   </ItemGroup>
+
+  <!-- Generated at build time into the content root and copied to output/publish, so the
+       diagnostics endpoint can read it at runtime. See the grdev standard, "Production
+       version file". -->
+  <ItemGroup>
+    <Content Include="ProductionVersion.json"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Captures the computed version, the exact commit, and the build time. Never hand-edit
+       it - it is regenerated on every build. DependsOnTargets=GetBuildVersion ensures NBGV
+       has populated $(Version) and $(GitCommitId) first. -->
+  <Target Name="GenerateProductionVersion" BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="GetBuildVersion">
+    <!-- The oneline format emits "&lt;40-char-sha&gt; &lt;subject&gt;" with no % placeholder, which
+         MSBuild's batch-file Exec would otherwise mangle. Strip the sha+space to get the subject. -->
+    <Exec Command="git log -1 --format=oneline --no-decorate"
+          ConsoleToMSBuild="true" ContinueOnError="true"
+          WorkingDirectory="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_CommitLine" />
+    </Exec>
+    <PropertyGroup>
+      <_CommitMessage Condition="'$(_CommitLine)' != '' and $(_CommitLine.Length) &gt; 41">$(_CommitLine.Substring(41))</_CommitMessage>
+      <_PvMsg>$(_CommitMessage.Replace('\','\\').Replace('&quot;','\&quot;'))</_PvMsg>
+      <_PvTime>$([System.DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))</_PvTime>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PvLines Include="{" />
+      <_PvLines Include="  &quot;version&quot;: &quot;$(Version)&quot;," />
+      <_PvLines Include="  &quot;commit&quot;: {" />
+      <_PvLines Include="    &quot;message&quot;: &quot;$(_PvMsg)&quot;," />
+      <_PvLines Include="    &quot;sha&quot;: &quot;$(GitCommitId)&quot;" />
+      <_PvLines Include="  }," />
+      <_PvLines Include="  &quot;build&quot;: {" />
+      <_PvLines Include="    &quot;time&quot;: &quot;$(_PvTime)&quot;" />
+      <_PvLines Include="  }" />
+      <_PvLines Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)\ProductionVersion.json"
+                      Lines="@(_PvLines)" Overwrite="true" WriteOnlyWhenDifferent="false" />
+  </Target>
 
 </Project>
